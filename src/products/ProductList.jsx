@@ -303,7 +303,7 @@ const ProductList = () => {
                   {isWishlisted ? '❤️' : '🤍'}
                 </button>
               )}
-              {product.sold > 100 && (
+              {(product.isHot || product.sold > 100) && (
                 <div style={{
                   position: 'absolute', top: '12px', left: '12px', zIndex: 1,
                   background: 'linear-gradient(135deg, #f59e0b, #d97706)',
@@ -311,13 +311,21 @@ const ProductList = () => {
                   fontSize: '11px', fontWeight: '700',
                 }}>{s.catalogBadgeHot || '🔥 פופולרי'}</div>
               )}
-              {product.sold < 20 && (
+              {product.isNew && !product.isHot && (
                 <div style={{
                   position: 'absolute', top: '12px', left: '12px', zIndex: 1,
                   background: 'linear-gradient(135deg, #34d399, #059669)',
                   color: 'white', padding: '4px 10px', borderRadius: '50px',
                   fontSize: '11px', fontWeight: '700',
                 }}>{s.catalogBadgeNew || '✨ חדש'}</div>
+              )}
+              {product.isSale && !product.isHot && !product.isNew && (
+                <div style={{
+                  position: 'absolute', top: '12px', left: '12px', zIndex: 1,
+                  background: 'linear-gradient(135deg, #f87171, #dc2626)',
+                  color: 'white', padding: '4px 10px', borderRadius: '50px',
+                  fontSize: '11px', fontWeight: '700',
+                }}>🏷️ מבצע</div>
               )}
               <img src={product.image} alt={product.name}
                 style={{ width: '100%', height: '200px', objectFit: 'cover', cursor: 'pointer' }}

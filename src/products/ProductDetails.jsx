@@ -133,6 +133,12 @@ const ProductDetails = () => {
           <div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: '16px'}}>
             <h1 style={{fontSize: '32px', fontWeight: 'bold', color: '#1f2937', margin: 0}}>{product.name}</h1>
 
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {product.isHot  && <span style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: 'white', padding: '4px 12px', borderRadius: '50px', fontSize: '12px', fontWeight: '700' }}>🔥 חם</span>}
+              {product.isNew  && <span style={{ background: 'linear-gradient(135deg,#34d399,#059669)', color: 'white', padding: '4px 12px', borderRadius: '50px', fontSize: '12px', fontWeight: '700' }}>✨ חדש</span>}
+              {product.isSale && <span style={{ background: 'linear-gradient(135deg,#f87171,#dc2626)', color: 'white', padding: '4px 12px', borderRadius: '50px', fontSize: '12px', fontWeight: '700' }}>🏷️ מבצע</span>}
+            </div>
+
             <div style={{fontSize: '16px', color: '#0891b2'}}>
               {averageRating} ★ <span style={{color: '#94a3b8'}}>({reviews.length} חווות דעת)</span>
             </div>
