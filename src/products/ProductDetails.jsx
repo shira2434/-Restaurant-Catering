@@ -158,7 +158,7 @@ const ProductDetails = () => {
             {user && !user.isAdmin && (
               <div style={{display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '8px'}}>
                 <button
-                  onClick={handleAddToCart}
+                  onClick={() => handleAddToCart()}
                   style={{
                     backgroundColor: added ? '#16a34a' : '#0891b2',
                     color: 'white', padding: '12px 24px', borderRadius: '12px',

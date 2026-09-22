@@ -360,7 +360,7 @@ const ProductList = () => {
                   {s.catalogBtnDetails || 'צפה בפרטים'}
                 </button>
                 {!user?.isAdmin && (
-                  <button onClick={() => handleAddToCart(product)} style={{
+                  <button onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }} style={{
                     width: '100%',
                     background: addedMap[product.id] ? 'linear-gradient(135deg, #86efac, #16a34a)' : 'white',
                     color: addedMap[product.id] ? 'white' : PRIMARY,
