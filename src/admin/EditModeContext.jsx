@@ -358,84 +358,91 @@ function EditPanel({ open, section, setSection, settings, onSave, saving }) {
 
   if (!open) return null;
 
+  const inp = { padding: '10px 14px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', color: 'white', fontSize: '14px', outline: 'none', width: '100%', boxSizing: 'border-box', transition: 'border-color 0.2s' };
+
   return (
-    <div style={{ position: 'fixed', top: '52px', right: 0, bottom: 0, width: '340px', background: '#0f172a', borderLeft: '2px solid #c8622a44', zIndex: 99998, display: 'flex', flexDirection: 'column', boxShadow: '-8px 0 32px rgba(0,0,0,0.4)', direction: 'rtl' }}>
+    <div style={{ position: 'fixed', top: '52px', right: 0, bottom: 0, width: '480px', background: '#0d1117', borderLeft: '1px solid rgba(200,98,42,0.25)', zIndex: 99998, display: 'flex', boxShadow: '-12px 0 48px rgba(0,0,0,0.5)', direction: 'rtl' }}>
 
-      {/* Search */}
-      <div style={{ padding: '10px 10px 0', background: '#1e293b' }}>
-        {section !== 'paragraphs' && (
-          <input
-            value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="🔍 חיפוש שדה..."
-            style={{ width: '100%', padding: '7px 10px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', color: 'white', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
-          />
-        )}
-      </div>
-
-      {/* Tabs */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', padding: '10px', borderBottom: '1px solid rgba(255,255,255,0.08)', background: '#1e293b' }}>
+      {/* Sidebar tabs */}
+      <div style={{ width: '140px', flexShrink: 0, background: '#161b22', borderLeft: '1px solid rgba(255,255,255,0.06)', overflowY: 'auto', display: 'flex', flexDirection: 'column', padding: '8px 6px', gap: '2px' }}>
         {PANEL_SECTIONS.map(s => (
-          <button key={s.id} onClick={() => setSection(s.id)} style={{ padding: '5px 9px', borderRadius: '8px', fontSize: '11px', fontWeight: '600', border: 'none', cursor: 'pointer', background: section === s.id ? 'linear-gradient(135deg,#c8622a,#e8a87c)' : 'rgba(255,255,255,0.07)', color: section === s.id ? 'white' : 'rgba(255,255,255,0.6)' }}>
+          <button key={s.id} onClick={() => setSection(s.id)} style={{
+            padding: '10px 10px', borderRadius: '10px', fontSize: '12px', fontWeight: section === s.id ? '700' : '500',
+            border: 'none', cursor: 'pointer', textAlign: 'right', lineHeight: '1.4',
+            background: section === s.id ? 'linear-gradient(135deg,#c8622a,#e8a87c)' : 'transparent',
+            color: section === s.id ? 'white' : 'rgba(255,255,255,0.55)',
+            transition: 'all 0.15s',
+          }}>
             {s.label}
           </button>
         ))}
       </div>
 
-      {/* Fields */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '14px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        {section === 'paragraphs' && <ParagraphsEditor settings={settings} onSave={onSave} />}
-        {section === 'catManager' && <CatManager settings={settings} onSave={onSave} />}
-        {section !== 'paragraphs' && section !== 'catManager' && visibleFields?.length === 0 && (
-          <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '13px', textAlign: 'center', marginTop: '20px' }}>אין תוצאות</p>
-        )}
-        {visibleFields?.map(field => (
-          <div key={field.key}>
-            <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: 'rgba(255,255,255,0.5)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              {field.label}
-            </label>
+      {/* Content */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
 
-            {field.type === 'color' && (
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <input type="color" value={getValue(field.key) || '#c8622a'} onChange={e => handleChange(field.key, e.target.value)}
-                  style={{ width: '44px', height: '36px', border: 'none', borderRadius: '8px', cursor: 'pointer', padding: '2px', background: 'none', flexShrink: 0 }} />
-                <input value={getValue(field.key)} onChange={e => handleChange(field.key, e.target.value)}
-                  style={{ flex: 1, padding: '8px 10px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', color: 'white', fontSize: '13px', outline: 'none' }} />
-                <SaveBtn onClick={() => handleSave(field.key)} saved={saved[field.key]} />
-              </div>
-            )}
+        {/* Header */}
+        <div style={{ padding: '14px 16px', background: '#161b22', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ fontSize: '16px' }}>{PANEL_SECTIONS.find(s => s.id === section)?.label}</span>
+          {section !== 'paragraphs' && section !== 'catManager' && (
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="🔍 חיפוש..."
+              style={{ flex: 1, padding: '7px 12px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '13px', outline: 'none' }} />
+          )}
+        </div>
 
-            {field.type === 'image' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <div style={{ display: 'flex', gap: '6px' }}>
-                  <input value={getValue(field.key)} onChange={e => handleChange(field.key, e.target.value)} placeholder="https://..."
-                    style={{ flex: 1, padding: '8px 10px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', color: 'white', fontSize: '12px', outline: 'none' }} />
+        {/* Fields */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+          {section === 'paragraphs' && <ParagraphsEditor settings={settings} onSave={onSave} />}
+          {section === 'catManager' && <CatManager settings={settings} onSave={onSave} />}
+          {section !== 'paragraphs' && section !== 'catManager' && visibleFields?.length === 0 && (
+            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '13px', textAlign: 'center', marginTop: '20px' }}>אין תוצאות</p>
+          )}
+          {visibleFields?.map(field => (
+            <div key={field.key}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'rgba(255,255,255,0.6)', marginBottom: '8px' }}>
+                {field.label}
+              </label>
+              {field.type === 'color' && (
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <input type="color" value={getValue(field.key) || '#c8622a'} onChange={e => handleChange(field.key, e.target.value)}
+                    style={{ width: '48px', height: '42px', border: 'none', borderRadius: '10px', cursor: 'pointer', padding: '2px', background: 'none', flexShrink: 0 }} />
+                  <input value={getValue(field.key)} onChange={e => handleChange(field.key, e.target.value)}
+                    style={{ ...inp, flex: 1, width: 'auto' }} />
                   <SaveBtn onClick={() => handleSave(field.key)} saved={saved[field.key]} />
                 </div>
-                {getValue(field.key) && (
-                  <img src={getValue(field.key)} alt="" style={{ width: '100%', height: '90px', objectFit: 'cover', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }} onError={e => e.target.style.display = 'none'} />
-                )}
-              </div>
-            )}
-
-            {field.type === 'text' && (
-              <div style={{ display: 'flex', gap: '6px' }}>
-                <input value={getValue(field.key)} onChange={e => handleChange(field.key, e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSave(field.key)}
-                  style={{ flex: 1, padding: '8px 10px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', color: 'white', fontSize: '13px', outline: 'none' }} />
-                <SaveBtn onClick={() => handleSave(field.key)} saved={saved[field.key]} />
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Save all bar */}
-      {hasChanges && (
-        <div style={{ padding: '12px', borderTop: '1px solid rgba(255,255,255,0.08)', background: '#1e293b' }}>
-          <button onClick={handleSaveAll} disabled={saving} style={{ width: '100%', padding: '11px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg,#c8622a,#e8a87c)', color: 'white', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}>
-            {saving ? '⏳ שומר...' : `💾 שמור הכל (${Object.keys(localVals).length} שינויים)`}
-          </button>
+              )}
+              {field.type === 'image' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input value={getValue(field.key)} onChange={e => handleChange(field.key, e.target.value)} placeholder="https://..."
+                      style={{ ...inp, flex: 1, width: 'auto' }} />
+                    <SaveBtn onClick={() => handleSave(field.key)} saved={saved[field.key]} />
+                  </div>
+                  {getValue(field.key) && (
+                    <img src={getValue(field.key)} alt="" style={{ width: '100%', height: '110px', objectFit: 'cover', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)' }} onError={e => e.target.style.display = 'none'} />
+                  )}
+                </div>
+              )}
+              {field.type === 'text' && (
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input value={getValue(field.key)} onChange={e => handleChange(field.key, e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSave(field.key)}
+                    style={{ ...inp, flex: 1, width: 'auto' }} />
+                  <SaveBtn onClick={() => handleSave(field.key)} saved={saved[field.key]} />
+                </div>
+              )}
+            </div>
+          ))}
         </div>
-      )}
+
+        {/* Save all bar */}
+        {hasChanges && (
+          <div style={{ padding: '14px 16px', borderTop: '1px solid rgba(255,255,255,0.08)', background: '#161b22' }}>
+            <button onClick={handleSaveAll} disabled={saving} style={{ width: '100%', padding: '13px', borderRadius: '12px', border: 'none', background: 'linear-gradient(135deg,#c8622a,#e8a87c)', color: 'white', fontWeight: '700', fontSize: '15px', cursor: 'pointer', boxShadow: '0 4px 16px rgba(200,98,42,0.4)' }}>
+              {saving ? '⏳ שומר...' : `💾 שמור הכל — ${Object.keys(localVals).length} שינויים`}
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -700,40 +707,73 @@ function SaveBtn({ onClick, saved }) {
 // ── Popup ─────────────────────────────────────────────────────────────────────
 function EditPopup({ popup, onSave, onClose, saving }) {
   const [val, setVal] = useState(popup.value ?? '');
-  const { rect } = popup;
-  const top = Math.min(rect.bottom + 8, window.innerHeight - 320);
-  const left = Math.max(8, Math.min(rect.left, window.innerWidth - 380));
+  const changed = val !== (popup.value ?? '');
+
+  const LABEL_MAP = {
+    heroTitle: 'כותרת ראשית', heroSubtitle: 'תת-כותרת', heroEmoji: 'אמוג׳י Hero',
+    heroBtnText: 'כפתור ראשי', heroBtn2Text: 'כפתור משני', heroTagline: 'טקסט קטן',
+    categoriesTitle: 'כותרת קטגוריות', categoriesSubtitle: 'תת-כותרת קטגוריות',
+    primaryColor: 'צבע ראשי', secondaryColor: 'צבע משני', accentColor: 'צבע הדגשה',
+  };
+  const label = LABEL_MAP[popup.key] || popup.key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ');
 
   return (
     <>
-      <div style={{ position: 'fixed', inset: 0, zIndex: 99997 }} onClick={onClose} />
-      <div style={{ position: 'fixed', top, left, zIndex: 99998, background: 'white', borderRadius: '18px', padding: '20px', boxShadow: '0 24px 80px rgba(0,0,0,0.35)', width: '360px', border: '2px solid #e8a87c', direction: 'rtl' }} onClick={e => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+      <div style={{ position: 'fixed', inset: 0, zIndex: 99997, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)' }} onClick={onClose} />
+      <div style={{
+        position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+        zIndex: 99998, background: 'white', borderRadius: '24px', padding: '28px',
+        boxShadow: '0 32px 100px rgba(0,0,0,0.4)', width: '420px', maxWidth: 'calc(100vw - 32px)',
+        border: '2px solid #e8a87c55', direction: 'rtl',
+        animation: 'popupIn 0.2s cubic-bezier(0.34,1.56,0.64,1)'
+      }} onClick={e => e.stopPropagation()}>
+
+        <style>{`@keyframes popupIn { from { opacity:0; transform:translate(-50%,-50%) scale(0.9); } to { opacity:1; transform:translate(-50%,-50%) scale(1); } }`}</style>
+
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
           <div>
-            <span style={{ fontWeight: '800', color: '#3b1a08', fontSize: '14px' }}>✏️ עריכה</span>
-            <code style={{ marginRight: '8px', fontSize: '11px', color: '#c8622a', background: '#fdf6f0', padding: '2px 8px', borderRadius: '6px' }}>{popup.key}</code>
+            <div style={{ fontSize: '18px', fontWeight: '800', color: '#1f2937', marginBottom: '4px' }}>✏️ {label}</div>
+            <div style={{ fontSize: '12px', color: '#9ca3af' }}>לחץ שמור או Enter לאישור</div>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#9ca3af' }}>✕</button>
+          <button onClick={onClose} style={{ background: '#f3f4f6', border: 'none', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', fontSize: '16px', color: '#6b7280', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>✕</button>
         </div>
 
+        {/* Input */}
         {popup.type === 'color' ? (
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <input type="color" value={val} onChange={e => setVal(e.target.value)} style={{ width: '52px', height: '52px', border: 'none', borderRadius: '12px', cursor: 'pointer', padding: '2px', flexShrink: 0 }} />
-            <input value={val} onChange={e => setVal(e.target.value)} style={{ flex: 1, padding: '12px', border: '2px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', outline: 'none' }} />
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', background: '#f9fafb', borderRadius: '14px', padding: '12px' }}>
+            <input type="color" value={val} onChange={e => setVal(e.target.value)}
+              style={{ width: '56px', height: '56px', border: 'none', borderRadius: '12px', cursor: 'pointer', padding: '2px', flexShrink: 0 }} />
+            <div style={{ flex: 1 }}>
+              <input value={val} onChange={e => setVal(e.target.value)}
+                style={{ width: '100%', padding: '12px', border: '2px solid #e5e7eb', borderRadius: '10px', fontSize: '15px', outline: 'none', fontFamily: 'monospace', boxSizing: 'border-box' }} />
+              <div style={{ width: '100%', height: '8px', borderRadius: '4px', background: val, marginTop: '8px', border: '1px solid #e5e7eb' }} />
+            </div>
           </div>
         ) : popup.type === 'image' ? (
-          <>
-            <input value={val} onChange={e => setVal(e.target.value)} placeholder="https://..." style={{ width: '100%', padding: '11px', border: '2px solid #e5e7eb', borderRadius: '10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box', marginBottom: '10px' }} />
-            {val && <img src={val} alt="" style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '10px' }} onError={e => e.target.style.display = 'none'} />}
-          </>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <input value={val} onChange={e => setVal(e.target.value)} placeholder="https://images.unsplash.com/..."
+              style={{ width: '100%', padding: '13px', border: '2px solid #e5e7eb', borderRadius: '12px', fontSize: '13px', outline: 'none', boxSizing: 'border-box', direction: 'ltr' }} />
+            {val
+              ? <img src={val} alt="" style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: '12px', border: '2px solid #e5e7eb' }} onError={e => { e.target.style.display='none'; }} />
+              : <div style={{ width: '100%', height: '100px', background: '#f3f4f6', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: '13px' }}>תצוגה מקדימה תופיע כאן</div>
+            }
+          </div>
         ) : (
-          <textarea value={val} onChange={e => setVal(e.target.value)} rows={val.length > 60 ? 4 : 2} autoFocus onFocus={e => e.target.select()}
-            style={{ width: '100%', padding: '11px', border: '2px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', outline: 'none', resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', direction: 'rtl', lineHeight: '1.6' }} />
+          <textarea value={val} onChange={e => setVal(e.target.value)}
+            rows={val.length > 80 ? 5 : 3} autoFocus onFocus={e => e.target.select()}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && popup.type !== 'textarea') { e.preventDefault(); onSave(popup.key, val); } }}
+            style={{ width: '100%', padding: '14px', border: '2px solid #e5e7eb', borderRadius: '12px', fontSize: '15px', outline: 'none', resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', direction: 'rtl', lineHeight: '1.7', transition: 'border-color 0.2s' }}
+            onFocusCapture={e => e.target.style.borderColor = '#c8622a'}
+            onBlur={e => e.target.style.borderColor = '#e5e7eb'}
+          />
         )}
 
-        <div style={{ display: 'flex', gap: '8px', marginTop: '14px' }}>
-          <button onClick={onClose} style={{ flex: 1, padding: '10px', background: '#f3f4f6', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}>ביטול</button>
-          <button onClick={() => onSave(popup.key, val)} disabled={saving} style={{ flex: 2, padding: '10px', background: 'linear-gradient(135deg,#e8a87c,#c8622a)', border: 'none', borderRadius: '10px', cursor: 'pointer', color: 'white', fontWeight: '700', fontSize: '14px' }}>
+        {/* Footer */}
+        <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+          <button onClick={onClose} style={{ flex: 1, padding: '13px', background: '#f3f4f6', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', color: '#374151' }}>ביטול</button>
+          <button onClick={() => onSave(popup.key, val)} disabled={saving || !changed}
+            style={{ flex: 2, padding: '13px', background: changed ? 'linear-gradient(135deg,#e8a87c,#c8622a)' : '#e5e7eb', border: 'none', borderRadius: '12px', cursor: changed ? 'pointer' : 'default', color: changed ? 'white' : '#9ca3af', fontWeight: '700', fontSize: '15px', transition: 'all 0.2s', boxShadow: changed ? '0 4px 16px rgba(200,98,42,0.35)' : 'none' }}>
             {saving ? '⏳ שומר...' : '💾 שמור'}
           </button>
         </div>

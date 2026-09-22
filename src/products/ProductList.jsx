@@ -139,7 +139,7 @@ const ProductList = () => {
   const maxPrice = 200;
 
   return (
-    <div style={{ padding: '24px', paddingTop: active ? '72px' : '30px', paddingRight: active && panelOpen ? '340px' : '24px', transition: 'padding-right 0.3s' }}>
+    <div style={{ padding: '24px', paddingTop: active ? '72px' : '30px', paddingRight: active && panelOpen ? '480px' : '24px', transition: 'padding-right 0.3s' }}>
 
       {/* כותרת */}
       <div style={{

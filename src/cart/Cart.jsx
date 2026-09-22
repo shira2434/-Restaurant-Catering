@@ -15,7 +15,7 @@ const Cart = () => {
 
   if (items.length === 0) {
     return (
-      <div style={{ minHeight: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px', paddingTop: active ? '52px' : 0, paddingRight: active && panelOpen ? '340px' : 0, transition: 'padding-right 0.3s' }}>
+      <div style={{ minHeight: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px', paddingTop: active ? '52px' : 0, paddingRight: active && panelOpen ? '480px' : 0, transition: 'padding-right 0.3s' }}>
         <div style={{ fontSize: '80px' }}>🛒</div>
         <h2 {...ed('cartEmptyTitle')} style={{ fontSize: '28px', color: '#1f2937' }}>{s.cartEmptyTitle || 'הסל שלך ריק'}</h2>
         <p {...ed('cartEmptyText')} style={{ color: '#6b7280' }}>{s.cartEmptyText || 'הוסף מוצרים כדי להתחיל'}</p>
@@ -30,7 +30,7 @@ const Cart = () => {
   }
 
   return (
-    <div style={{ maxWidth: '900px', margin: '40px auto', padding: '0 20px', paddingTop: active ? '72px' : 0, paddingRight: active && panelOpen ? '340px' : '20px', transition: 'padding-right 0.3s' }}>
+    <div style={{ maxWidth: '900px', margin: '40px auto', padding: '0 20px', paddingTop: active ? '72px' : 0, paddingRight: active && panelOpen ? '480px' : '20px', transition: 'padding-right 0.3s' }}>
       <h1 {...ed('cartTitle')} style={{ fontSize: '32px', fontWeight: '800', marginBottom: '30px', color: '#3b1a08' }}>{s.cartTitle || '🛒 סל הקניות שלי'}</h1>
 
       <PageParagraphs page="cart" slot="top" />

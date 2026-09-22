@@ -61,7 +61,7 @@ const Profile = () => {
   const initials = `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase();
 
   return (
-    <div style={{ minHeight: '100vh', background: '#fdf6f0', padding: '40px 24px', paddingTop: active ? '92px' : '40px', paddingRight: active && panelOpen ? '340px' : '24px', transition: 'padding-right 0.3s' }}>
+    <div style={{ minHeight: '100vh', background: '#fdf6f0', padding: '40px 24px', paddingTop: active ? '92px' : '40px', paddingRight: active && panelOpen ? '480px' : '24px', transition: 'padding-right 0.3s' }}>
       <div style={{ maxWidth: '700px', margin: '0 auto' }}>
 
         {/* כרטיס פרופיל עליון */}

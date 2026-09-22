@@ -58,7 +58,7 @@ const BuildBox = () => {
   };
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '30px auto', padding: '0 20px', paddingTop: active ? '72px' : 0, paddingRight: active && panelOpen ? '340px' : '20px', transition: 'padding 0.3s' }}>
+    <div style={{ maxWidth: '1000px', margin: '30px auto', padding: '0 20px', paddingTop: active ? '72px' : 0, paddingRight: active && panelOpen ? '480px' : '20px', transition: 'padding 0.3s' }}>
 
       <div style={{
         background: 'linear-gradient(135deg, #e8a87c, #8b3a1a)',

@@ -23,7 +23,7 @@ const Wishlist = () => {
 
   if (items.length === 0) {
     return (
-      <div style={{ minHeight: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px', paddingTop: active ? '52px' : 0, paddingRight: active && panelOpen ? '340px' : 0, transition: 'padding 0.3s' }}>
+      <div style={{ minHeight: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px', paddingTop: active ? '52px' : 0, paddingRight: active && panelOpen ? '480px' : 0, transition: 'padding 0.3s' }}>
         <div style={{ fontSize: '80px' }}>🤍</div>
         <h2 {...ed('wishlistEmptyTitle')} style={{ fontSize: '28px', color: '#1f2937' }}>{s.wishlistEmptyTitle || 'אין מוצרים במועדפים'}</h2>
         <p {...ed('wishlistEmptyText')} style={{ color: '#6b7280' }}>{s.wishlistEmptyText || 'הוסף מוצרים שאהבת כדי למצוא אותם בקלות'}</p>
@@ -38,7 +38,7 @@ const Wishlist = () => {
   }
 
   return (
-    <div style={{ maxWidth: '1100px', margin: '40px auto', padding: '0 20px', paddingTop: active ? '72px' : 0, paddingRight: active && panelOpen ? '340px' : '20px', transition: 'padding 0.3s' }}>
+    <div style={{ maxWidth: '1100px', margin: '40px auto', padding: '0 20px', paddingTop: active ? '72px' : 0, paddingRight: active && panelOpen ? '480px' : '20px', transition: 'padding 0.3s' }}>
       <h1 {...ed('wishlistTitle')} style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '30px', color: '#1f2937' }}>{s.wishlistTitle || '❤️ המועדפים שלי'}</h1>
       <PageParagraphs page="wishlist" slot="top" />
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px' }}>

@@ -62,7 +62,7 @@ const HomePage = () => {
   const goTo = (name) => { if (!active) navigate(`/catalog?category=${encodeURIComponent(name)}`); };
 
   return (
-    <div style={{ minHeight: '100vh', background: s.bgColor || '#fdf6f0', paddingTop: active ? '52px' : 0, paddingRight: active && panelOpen ? '340px' : 0, transition: 'padding-right 0.3s' }}>
+    <div style={{ minHeight: '100vh', background: s.bgColor || '#fdf6f0', paddingTop: active ? '52px' : 0, paddingRight: active && panelOpen ? '480px' : 0, transition: 'padding-right 0.3s' }}>
 
       {/* Hero */}
       <div style={{ position: 'relative', padding: '80px 24px 60px', textAlign: 'center', overflow: 'hidden', minHeight: '460px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
