@@ -37,6 +37,9 @@ const PANEL_SECTIONS = [
     ]
   },
   {
+    id: 'catManager', label: '🗂️ ניהול קטגוריות', fields: []
+  },
+  {
     id: 'catImages', label: '🖼️ קטגוריות', fields: [
       { key: 'catName_פיצות',             label: '🍕 פיצות — שם',             type: 'text' },
       { key: 'catImg_פיצות',              label: '🍕 פיצות — תמונה',            type: 'image' },
@@ -381,7 +384,8 @@ function EditPanel({ open, section, setSection, settings, onSave, saving }) {
       {/* Fields */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '14px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {section === 'paragraphs' && <ParagraphsEditor settings={settings} onSave={onSave} />}
-        {section !== 'paragraphs' && visibleFields?.length === 0 && (
+        {section === 'catManager' && <CatManager settings={settings} onSave={onSave} />}
+        {section !== 'paragraphs' && section !== 'catManager' && visibleFields?.length === 0 && (
           <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '13px', textAlign: 'center', marginTop: '20px' }}>אין תוצאות</p>
         )}
         {visibleFields?.map(field => (
@@ -548,6 +552,139 @@ function ParagraphsEditor({ settings, onSave }) {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+const DEFAULT_CATS = [
+  { name: 'פיצות',             img: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=600&q=80', desc: 'פיצות איטלקיות אותנטיות', emoji: '🍕', featured: true },
+  { name: 'פסטות',             img: 'https://images.unsplash.com/photo-1612874742237-6526221588e3?w=600&q=80', desc: 'פסטות איטלקיות קלאסיות', emoji: '🍝', featured: true },
+  { name: 'סושי',              img: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=600&q=80', desc: 'סושי טרי ומגוון', emoji: '🍣', featured: true },
+  { name: 'דגים',              img: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=600&q=80', desc: 'דגים טריים ומנות ים', emoji: '🐟' },
+  { name: 'מנות גבינות',       img: 'https://images.unsplash.com/photo-1452195100486-9cc805987862?w=600&q=80', desc: 'גבינות מובחרות ומנות חלביות', emoji: '🧀' },
+  { name: "בוקר ובראנץ'",      img: 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=600&q=80', desc: 'ארוחות בוקר עשירות', emoji: '🥞' },
+  { name: 'סלטים',             img: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=80', desc: 'סלטים טריים ומרעננים', emoji: '🥗' },
+  { name: 'מרקים',             img: 'https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?w=600&q=80', desc: 'מרקים חמים וטעימים', emoji: '🍲' },
+  { name: 'כריכים ולחמים',     img: 'https://images.unsplash.com/photo-1509722747041-616f39b57569?w=600&q=80', desc: 'כריכים ביתיים ולחמים טריים', emoji: '🥙' },
+  { name: 'קינוחים',           img: 'https://images.unsplash.com/photo-1551024601-bec78aea704b?w=600&q=80', desc: 'קינוחים מפנקים ומתוקים', emoji: '🍰' },
+  { name: 'בר יין וקוקטיילים', img: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600&q=80', desc: 'יינות מובחרים וקוקטיילים', emoji: '🍷' },
+  { name: 'שתייה',             img: 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=600&q=80', desc: 'משקאות קרים וחמים', emoji: '☕' },
+];
+
+function CatManager({ settings, onSave }) {
+  const parseCats = () => {
+    try { return JSON.parse(settings.categories || 'null') || DEFAULT_CATS; }
+    catch { return DEFAULT_CATS; }
+  };
+  const [cats, setCats] = useState(parseCats);
+  const [editing, setEditing] = useState(null); // null | { idx, ...cat } | { _new, ...cat }
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => { setCats(parseCats()); }, [settings.categories]);
+
+  const persist = async (updated) => {
+    setSaving(true);
+    setCats(updated);
+    await onSave('categories', JSON.stringify(updated));
+    setSaving(false);
+  };
+
+  const handleSave = async () => {
+    if (!editing) return;
+    const { _new, idx, ...data } = editing;
+    const updated = _new ? [...cats, data] : cats.map((c, i) => i === idx ? data : c);
+    await persist(updated);
+    setEditing(null);
+  };
+
+  const handleDelete = async (idx) => {
+    if (!window.confirm('למחוק קטגוריה זו?')) return;
+    await persist(cats.filter((_, i) => i !== idx));
+  };
+
+  const move = async (idx, dir) => {
+    const updated = [...cats];
+    const swap = idx + dir;
+    if (swap < 0 || swap >= updated.length) return;
+    [updated[idx], updated[swap]] = [updated[swap], updated[idx]];
+    await persist(updated);
+  };
+
+  const toggleFeatured = async (idx) => {
+    const updated = cats.map((c, i) => i === idx ? { ...c, featured: !c.featured } : c);
+    await persist(updated);
+  };
+
+  const inp = { width: '100%', padding: '8px 10px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', color: 'white', fontSize: '13px', outline: 'none', boxSizing: 'border-box' };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div style={{ background: 'rgba(200,98,42,0.1)', border: '1px solid rgba(200,98,42,0.3)', borderRadius: '10px', padding: '10px 12px', fontSize: '12px', color: '#e8a87c', lineHeight: '1.6' }}>
+        💡 שנה שם, תמונה, אמוג'י וסדר קטגוריות. קטגוריות מסומנות כבולטות מופיעות גדולות בראש.
+      </div>
+
+      <button onClick={() => setEditing({ _new: true, name: '', img: '', desc: '', emoji: '🍽️', featured: false })}
+        style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px dashed rgba(200,98,42,0.5)', background: 'rgba(200,98,42,0.08)', color: '#e8a87c', fontWeight: '700', fontSize: '13px', cursor: 'pointer' }}>
+        ➕ הוסף קטגוריה
+      </button>
+
+      {editing && (
+        <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '14px', border: '1px solid rgba(200,98,42,0.3)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>שם קטגוריה</label>
+              <input value={editing.name} onChange={e => setEditing(p => ({ ...p, name: e.target.value }))} style={inp} placeholder="פיצות..." />
+            </div>
+            <div style={{ width: '64px' }}>
+              <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>אמוג'י</label>
+              <input value={editing.emoji} onChange={e => setEditing(p => ({ ...p, emoji: e.target.value }))} style={{ ...inp, textAlign: 'center', fontSize: '20px' }} />
+            </div>
+          </div>
+          <div>
+            <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>תמונה (URL)</label>
+            <input value={editing.img} onChange={e => setEditing(p => ({ ...p, img: e.target.value }))} style={inp} placeholder="https://..." />
+            {editing.img && <img src={editing.img} alt="" style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '8px', marginTop: '6px' }} onError={e => e.target.style.display='none'} />}
+          </div>
+          <div>
+            <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>תיאור קצר</label>
+            <input value={editing.desc} onChange={e => setEditing(p => ({ ...p, desc: e.target.value }))} style={inp} placeholder="תיאור קצר..." />
+          </div>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <input type="checkbox" checked={!!editing.featured} onChange={e => setEditing(p => ({ ...p, featured: e.target.checked }))}
+              style={{ width: '16px', height: '16px', accentColor: '#c8622a' }} />
+            <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)', fontWeight: '600' }}>⭐ מוצג בולט (גדול בראש)</span>
+          </label>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button onClick={() => setEditing(null)} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: 'none', background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', fontSize: '12px' }}>ביטול</button>
+            <button onClick={handleSave} disabled={saving} style={{ flex: 2, padding: '8px', borderRadius: '8px', border: 'none', background: 'linear-gradient(135deg,#c8622a,#e8a87c)', color: 'white', fontWeight: '700', cursor: 'pointer', fontSize: '12px' }}>
+              {saving ? '⏳...' : '💾 שמור'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {cats.map((cat, idx) => (
+        <div key={idx} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px' }}>
+            {cat.img && <img src={cat.img} alt="" style={{ width: '44px', height: '44px', objectFit: 'cover', borderRadius: '8px', flexShrink: 0 }} onError={e => e.target.style.display='none'} />}
+            {!cat.img && <div style={{ width: '44px', height: '44px', background: 'rgba(255,255,255,0.08)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0 }}>{cat.emoji}</div>}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ color: 'white', fontWeight: '700', fontSize: '13px' }}>{cat.emoji} {cat.name}</span>
+                {cat.featured && <span style={{ fontSize: '10px', background: 'rgba(200,98,42,0.3)', color: '#e8a87c', padding: '1px 6px', borderRadius: '50px', fontWeight: '700' }}>⭐ בולט</span>}
+              </div>
+              <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '11px', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cat.desc}</div>
+            </div>
+            <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+              <button onClick={() => move(idx, -1)} disabled={idx === 0} style={{ background: 'rgba(255,255,255,0.06)', border: 'none', color: idx === 0 ? 'rgba(255,255,255,0.2)' : 'white', width: '26px', height: '26px', borderRadius: '6px', cursor: idx === 0 ? 'default' : 'pointer', fontSize: '12px' }}>↑</button>
+              <button onClick={() => move(idx, 1)} disabled={idx === cats.length - 1} style={{ background: 'rgba(255,255,255,0.06)', border: 'none', color: idx === cats.length - 1 ? 'rgba(255,255,255,0.2)' : 'white', width: '26px', height: '26px', borderRadius: '6px', cursor: idx === cats.length - 1 ? 'default' : 'pointer', fontSize: '12px' }}>↓</button>
+              <button onClick={() => toggleFeatured(idx)} style={{ background: cat.featured ? 'rgba(200,98,42,0.3)' : 'rgba(255,255,255,0.06)', border: 'none', color: cat.featured ? '#e8a87c' : 'rgba(255,255,255,0.5)', width: '26px', height: '26px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>⭐</button>
+              <button onClick={() => setEditing({ idx, ...cat })} style={{ background: 'rgba(255,255,255,0.08)', border: 'none', color: 'white', width: '26px', height: '26px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>✏️</button>
+              <button onClick={() => handleDelete(idx)} style={{ background: 'rgba(239,68,68,0.15)', border: 'none', color: '#fca5a5', width: '26px', height: '26px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>🗑️</button>
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

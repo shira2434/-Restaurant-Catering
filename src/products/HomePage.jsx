@@ -24,7 +24,7 @@ const DEFAULT = {
   allCatsLabel: 'כל הקטגוריות',
 };
 
-const categories = [
+const DEFAULT_CATS = [
   { name: 'פיצות',             img: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=600&q=80', desc: 'פיצות איטלקיות אותנטיות', emoji: '🍕', featured: true },
   { name: 'פסטות',             img: 'https://images.unsplash.com/photo-1612874742237-6526221588e3?w=600&q=80', desc: 'פסטות איטלקיות קלאסיות', emoji: '🍝', featured: true },
   { name: 'סושי',              img: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=600&q=80', desc: 'סושי טרי ומגוון', emoji: '🍣', featured: true },
@@ -53,10 +53,12 @@ const HomePage = () => {
   }, []);
 
   const s = active ? { ...base, ...liveS } : base;
-  const getCatImg = (name) => s[`catImg_${name}`] || categories.find(c => c.name === name)?.img || '';
-  const getCatName = (name) => s[`catName_${name}`] || name;
-  const featured = categories.filter(c => c.featured);
-  const rest = categories.filter(c => !c.featured);
+  const liveCats = (() => { try { return JSON.parse(s.categories || 'null'); } catch { return null; } })();
+  const allCats = liveCats || DEFAULT_CATS;
+  const getCatImg = (cat) => cat.img || '';
+  const getCatName = (cat) => s[`catName_${cat.name}`] || cat.name;
+  const featured = allCats.filter(c => c.featured);
+  const rest = allCats.filter(c => !c.featured);
   const goTo = (name) => { if (!active) navigate(`/catalog?category=${encodeURIComponent(name)}`); };
 
   return (
@@ -132,7 +134,7 @@ const HomePage = () => {
                 onMouseEnter={e => { if (!active) { e.currentTarget.style.transform = 'translateY(-8px)'; e.currentTarget.style.boxShadow = '0 20px 50px rgba(0,0,0,0.2)'; } }}
                 onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.12)'; }}
               >
-                <img src={getCatImg(cat.name)} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img src={getCatImg(cat)} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 60%, transparent 100%)' }} />
                 {active && (
                   <button {...editable(`catImg_${cat.name}`, 'image')} style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 5, background: 'rgba(0,0,0,0.65)', color: 'white', border: '1px solid rgba(255,255,255,0.3)', padding: '4px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '11px', fontWeight: '600' }}>
@@ -141,7 +143,7 @@ const HomePage = () => {
                 )}
                 <div style={{ position: 'absolute', bottom: '20px', right: '20px', left: '20px' }}>
                   <div style={{ fontSize: '28px', marginBottom: '4px' }}>{cat.emoji}</div>
-                  <h3 {...editable(`catName_${cat.name}`)} style={{ fontSize: '22px', fontWeight: '800', color: 'white', margin: '0 0 4px', textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>{getCatName(cat.name)}</h3>
+                  <h3 style={{ fontSize: '22px', fontWeight: '800', color: 'white', margin: '0 0 4px', textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>{getCatName(cat)}</h3>
                   <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)', margin: 0 }}>{cat.desc}</p>
                 </div>
                 <div {...editable('featuredBadge')} style={{ position: 'absolute', top: '16px', left: '16px', background: `linear-gradient(135deg, ${s.accentColor}, ${s.primaryColor})`, color: 'white', padding: '4px 12px', borderRadius: '50px', fontSize: '11px', fontWeight: '700' }}>{s.featuredBadge}</div>
@@ -160,7 +162,7 @@ const HomePage = () => {
                 onMouseEnter={e => { if (!active) { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.boxShadow = '0 16px 40px rgba(200,98,42,0.25)'; } }}
                 onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.1)'; }}
               >
-                <img src={getCatImg(cat.name)} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img src={getCatImg(cat)} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%)' }} />
                 {active && (
                   <button {...editable(`catImg_${cat.name}`, 'image')} style={{ position: 'absolute', top: '6px', right: '6px', zIndex: 5, background: 'rgba(0,0,0,0.65)', color: 'white', border: '1px solid rgba(255,255,255,0.3)', padding: '3px 8px', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: '600' }}>
@@ -169,7 +171,7 @@ const HomePage = () => {
                 )}
                 <div style={{ position: 'absolute', bottom: '14px', right: '14px', left: '14px' }}>
                   <div style={{ fontSize: '20px', marginBottom: '2px' }}>{cat.emoji}</div>
-                  <h3 {...editable(`catName_${cat.name}`)} style={{ fontSize: '15px', fontWeight: '700', color: 'white', margin: 0, textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>{getCatName(cat.name)}</h3>
+                  <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'white', margin: 0, textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>{getCatName(cat)}</h3>
                 </div>
               </div>
             ))}
