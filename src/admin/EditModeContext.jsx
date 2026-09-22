@@ -213,6 +213,7 @@ export function EditModeProvider({ children }) {
   const [active, setActive] = useState(false);
   const [settings, setSettings] = useState({});
   const [popup, setPopup] = useState(null);
+  const [confirm, setConfirm] = useState(null); // { msg, onOk }
   const [saving, setSaving] = useState(false);
   const [history, setHistory] = useState([]);
   const [highlight, setHighlight] = useState(true);
@@ -266,11 +267,12 @@ export function EditModeProvider({ children }) {
   }, [active, settings, highlight]);
 
   return (
-    <Ctx.Provider value={{ active, setActive, settings, editable, save, undo, resetAll, saving, history, highlight, setHighlight, panelOpen, setPanelOpen, setPanelSection }}>
+    <Ctx.Provider value={{ active, setActive, settings, editable, save, undo, resetAll, saving, history, highlight, setHighlight, panelOpen, setPanelOpen, setPanelSection, confirm: setConfirm }}>
       {children}
       {active && <EditToolbar saving={saving} history={history} undo={undo} resetAll={resetAll} setActive={setActive} highlight={highlight} setHighlight={setHighlight} panelOpen={panelOpen} setPanelOpen={setPanelOpen} />}
-      {active && <EditPanel open={panelOpen} section={panelSection} setSection={setPanelSection} settings={settings} onSave={save} saving={saving} />}
+      {active && <EditPanel open={panelOpen} section={panelSection} setSection={setPanelSection} settings={settings} onSave={save} saving={saving} confirmFn={setConfirm} />}
       {popup && <EditPopup popup={popup} onSave={save} onClose={() => setPopup(null)} saving={saving} />}
+      {confirm && <ConfirmDialog msg={confirm.msg} onOk={() => { confirm.onOk(); setConfirm(null); }} onCancel={() => setConfirm(null)} />}
       {active && <style>{`[data-editable]:hover { outline: 2px dashed #c8622a !important; outline-offset: 3px !important; border-radius: 4px !important; }`}</style>}
     </Ctx.Provider>
   );
@@ -329,7 +331,7 @@ function EditToolbar({ saving, history, undo, resetAll, setActive, highlight, se
 }
 
 // ── Side Panel ────────────────────────────────────────────────────────────────
-function EditPanel({ open, section, setSection, settings, onSave, saving }) {
+function EditPanel({ open, section, setSection, settings, onSave, saving, confirmFn }) {
   const [localVals, setLocalVals] = useState({});
   const [saved, setSaved] = useState({});
   const [search, setSearch] = useState('');
@@ -392,8 +394,8 @@ function EditPanel({ open, section, setSection, settings, onSave, saving }) {
 
         {/* Fields */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
-          {section === 'paragraphs' && <ParagraphsEditor settings={settings} onSave={onSave} />}
-          {section === 'catManager' && <CatManager settings={settings} onSave={onSave} />}
+          {section === 'paragraphs' && <ParagraphsEditor settings={settings} onSave={onSave} confirmFn={confirmFn} />}
+          {section === 'catManager' && <CatManager settings={settings} onSave={onSave} confirmFn={confirmFn} />}
           {section !== 'paragraphs' && section !== 'catManager' && visibleFields?.length === 0 && (
             <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '13px', textAlign: 'center', marginTop: '20px' }}>אין תוצאות</p>
           )}
@@ -474,7 +476,7 @@ const PAGE_OPTIONS = [
   { value: 'wishlist', label: '❤️ מועדפים',  slots: [{ value: 'top', label: 'ראש העמוד' }, { value: 'bottom', label: 'תחתית העמוד' }] },
 ];
 
-function ParagraphsEditor({ settings, onSave }) {
+function ParagraphsEditor({ settings, onSave, confirmFn }) {
   const parseParagraphs = () => { try { return JSON.parse(settings.paragraphs || '[]'); } catch { return []; } };
   const [paragraphs, setParagraphs] = useState(parseParagraphs);
   const [editing, setEditing] = useState(null);
@@ -495,8 +497,9 @@ function ParagraphsEditor({ settings, onSave }) {
   };
 
   const handleDelete = async (idx) => {
-    if (!window.confirm('למחוק פסקאה זו?')) return;
-    await persist(paragraphs.filter((_, i) => i !== idx));
+    confirmFn({ msg: 'למחוק פסקאה זו?', onOk: async () => {
+      await persist(paragraphs.filter((_, i) => i !== idx));
+    }});
   };
 
   const inputStyle = { width: '100%', padding: '8px 10px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', color: 'white', fontSize: '13px', outline: 'none', boxSizing: 'border-box' };
@@ -578,7 +581,7 @@ const DEFAULT_CATS = [
   { name: 'שתייה',             img: 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=600&q=80', desc: 'משקאות קרים וחמים', emoji: '☕' },
 ];
 
-function CatManager({ settings, onSave }) {
+function CatManager({ settings, onSave, confirmFn }) {
   const parseCats = () => {
     try { return JSON.parse(settings.categories || 'null') || DEFAULT_CATS; }
     catch { return DEFAULT_CATS; }
@@ -605,8 +608,9 @@ function CatManager({ settings, onSave }) {
   };
 
   const handleDelete = async (idx) => {
-    if (!window.confirm('למחוק קטגוריה זו?')) return;
-    await persist(cats.filter((_, i) => i !== idx));
+    confirmFn({ msg: `למחוק את הקטגוריה "${cats[idx]?.name}"?`, onOk: async () => {
+      await persist(cats.filter((_, i) => i !== idx));
+    }});
   };
 
   const move = async (idx, dir) => {
@@ -696,6 +700,29 @@ function CatManager({ settings, onSave }) {
   );
 }
 
+function ConfirmDialog({ msg, onOk, onCancel }) {
+  return (
+    <>
+      <div style={{ position: 'fixed', inset: 0, zIndex: 999999, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }} onClick={onCancel} />
+      <div style={{
+        position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+        zIndex: 9999999, background: 'white', borderRadius: '20px', padding: '28px 24px',
+        width: '340px', maxWidth: 'calc(100vw - 32px)', direction: 'rtl',
+        boxShadow: '0 24px 80px rgba(0,0,0,0.35)',
+        animation: 'popupIn 0.18s cubic-bezier(0.34,1.4,0.64,1)',
+      }}>
+        <div style={{ width: '52px', height: '52px', background: '#fee2e2', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', margin: '0 auto 16px' }}>🗑️</div>
+        <p style={{ textAlign: 'center', fontSize: '16px', fontWeight: '700', color: '#1f2937', margin: '0 0 8px' }}>בטוח?</p>
+        <p style={{ textAlign: 'center', fontSize: '14px', color: '#6b7280', margin: '0 0 24px', lineHeight: '1.5' }}>{msg}</p>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button onClick={onCancel} style={{ flex: 1, padding: '12px', background: '#f3f4f6', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', color: '#374151' }}>ביטול</button>
+          <button onClick={onOk} style={{ flex: 1, padding: '12px', background: 'linear-gradient(135deg,#ef4444,#dc2626)', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: '700', fontSize: '14px', color: 'white', boxShadow: '0 4px 12px rgba(220,38,38,0.3)' }}>מחק</button>
+        </div>
+      </div>
+    </>
+  );
+}
+
 function SaveBtn({ onClick, saved }) {
   return (
     <button onClick={onClick} style={{ padding: '6px 10px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: '700', background: saved ? '#16a34a' : 'linear-gradient(135deg,#c8622a,#e8a87c)', color: 'white', flexShrink: 0, transition: 'background 0.2s' }}>
@@ -717,63 +744,102 @@ function EditPopup({ popup, onSave, onClose, saving }) {
   };
   const label = LABEL_MAP[popup.key] || popup.key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ');
 
+  // מיקום מתחת לאלמנט, בתוך גבולות המסך
+  const { rect } = popup;
+  const popupW = 380;
+  const popupH = popup.type === 'image' ? 320 : popup.type === 'color' ? 200 : 220;
+  const margin = 12;
+  const panelW = 480; // רוחב הפאנל כשפתוח
+
+  let top = rect.bottom + margin;
+  if (top + popupH > window.innerHeight - margin) top = rect.top - popupH - margin;
+  if (top < 60) top = 60;
+
+  let left = rect.left;
+  if (left + popupW > window.innerWidth - panelW - margin) left = window.innerWidth - panelW - popupW - margin;
+  if (left < margin) left = margin;
+
   return (
     <>
-      <div style={{ position: 'fixed', inset: 0, zIndex: 99997, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)' }} onClick={onClose} />
+      <div style={{ position: 'fixed', inset: 0, zIndex: 99997 }} onClick={onClose} />
+
+      {/* חץ מחבר לאלמנט */}
       <div style={{
-        position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-        zIndex: 99998, background: 'white', borderRadius: '24px', padding: '28px',
-        boxShadow: '0 32px 100px rgba(0,0,0,0.4)', width: '420px', maxWidth: 'calc(100vw - 32px)',
-        border: '2px solid #e8a87c55', direction: 'rtl',
-        animation: 'popupIn 0.2s cubic-bezier(0.34,1.56,0.64,1)'
+        position: 'fixed',
+        top: rect.bottom + 4,
+        left: Math.min(rect.left + rect.width / 2 - 8, window.innerWidth - panelW - 24),
+        width: 0, height: 0,
+        borderLeft: '8px solid transparent',
+        borderRight: '8px solid transparent',
+        borderBottom: top > rect.bottom ? '8px solid white' : 'none',
+        borderTop: top < rect.top ? '8px solid white' : 'none',
+        zIndex: 99999,
+        filter: 'drop-shadow(0 -2px 4px rgba(0,0,0,0.1))'
+      }} />
+
+      <div style={{
+        position: 'fixed', top, left,
+        zIndex: 99998,
+        background: 'white',
+        borderRadius: '20px',
+        padding: '20px',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.25), 0 0 0 1px rgba(200,98,42,0.15)',
+        width: `${popupW}px`,
+        direction: 'rtl',
+        animation: 'popupIn 0.18s cubic-bezier(0.34,1.4,0.64,1)',
       }} onClick={e => e.stopPropagation()}>
 
-        <style>{`@keyframes popupIn { from { opacity:0; transform:translate(-50%,-50%) scale(0.9); } to { opacity:1; transform:translate(-50%,-50%) scale(1); } }`}</style>
+        <style>{`@keyframes popupIn { from { opacity:0; transform:translateY(-8px) scale(0.96); } to { opacity:1; transform:translateY(0) scale(1); } }`}</style>
 
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
-          <div>
-            <div style={{ fontSize: '18px', fontWeight: '800', color: '#1f2937', marginBottom: '4px' }}>✏️ {label}</div>
-            <div style={{ fontSize: '12px', color: '#9ca3af' }}>לחץ שמור או Enter לאישור</div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ width: '32px', height: '32px', background: 'linear-gradient(135deg,#fdf6f0,#fdeee0)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>✏️</div>
+            <div>
+              <div style={{ fontSize: '15px', fontWeight: '800', color: '#1f2937' }}>{label}</div>
+              <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '1px' }}>Enter לשמירה עיזה</div>
+            </div>
           </div>
-          <button onClick={onClose} style={{ background: '#f3f4f6', border: 'none', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', fontSize: '16px', color: '#6b7280', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>✕</button>
+          <button onClick={onClose} style={{ background: '#f3f4f6', border: 'none', width: '28px', height: '28px', borderRadius: '50%', cursor: 'pointer', fontSize: '14px', color: '#6b7280', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
         </div>
 
         {/* Input */}
         {popup.type === 'color' ? (
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', background: '#f9fafb', borderRadius: '14px', padding: '12px' }}>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', background: '#f9fafb', borderRadius: '12px', padding: '10px' }}>
             <input type="color" value={val} onChange={e => setVal(e.target.value)}
-              style={{ width: '56px', height: '56px', border: 'none', borderRadius: '12px', cursor: 'pointer', padding: '2px', flexShrink: 0 }} />
+              style={{ width: '52px', height: '52px', border: 'none', borderRadius: '10px', cursor: 'pointer', padding: '2px', flexShrink: 0 }} />
             <div style={{ flex: 1 }}>
               <input value={val} onChange={e => setVal(e.target.value)}
-                style={{ width: '100%', padding: '12px', border: '2px solid #e5e7eb', borderRadius: '10px', fontSize: '15px', outline: 'none', fontFamily: 'monospace', boxSizing: 'border-box' }} />
-              <div style={{ width: '100%', height: '8px', borderRadius: '4px', background: val, marginTop: '8px', border: '1px solid #e5e7eb' }} />
+                style={{ width: '100%', padding: '10px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '14px', outline: 'none', fontFamily: 'monospace', boxSizing: 'border-box' }} />
+              <div style={{ width: '100%', height: '6px', borderRadius: '3px', background: val, marginTop: '6px', border: '1px solid #e5e7eb' }} />
             </div>
           </div>
         ) : popup.type === 'image' ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <input value={val} onChange={e => setVal(e.target.value)} placeholder="https://images.unsplash.com/..."
-              style={{ width: '100%', padding: '13px', border: '2px solid #e5e7eb', borderRadius: '12px', fontSize: '13px', outline: 'none', boxSizing: 'border-box', direction: 'ltr' }} />
-            {val
-              ? <img src={val} alt="" style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: '12px', border: '2px solid #e5e7eb' }} onError={e => { e.target.style.display='none'; }} />
-              : <div style={{ width: '100%', height: '100px', background: '#f3f4f6', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: '13px' }}>תצוגה מקדימה תופיע כאן</div>
-            }
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <input value={val} onChange={e => setVal(e.target.value)} placeholder="https://..."
+              style={{ width: '100%', padding: '11px', border: '2px solid #e5e7eb', borderRadius: '10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box', direction: 'ltr' }} />
+            <div style={{ width: '100%', height: '120px', borderRadius: '10px', overflow: 'hidden', background: '#f3f4f6', border: '2px solid #e5e7eb' }}>
+              {val
+                ? <img src={val} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => e.target.style.display='none'} />
+                : <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: '13px' }}>🖼️ תצוגה מקדימה</div>
+              }
+            </div>
           </div>
         ) : (
           <textarea value={val} onChange={e => setVal(e.target.value)}
-            rows={val.length > 80 ? 5 : 3} autoFocus onFocus={e => e.target.select()}
-            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && popup.type !== 'textarea') { e.preventDefault(); onSave(popup.key, val); } }}
-            style={{ width: '100%', padding: '14px', border: '2px solid #e5e7eb', borderRadius: '12px', fontSize: '15px', outline: 'none', resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', direction: 'rtl', lineHeight: '1.7', transition: 'border-color 0.2s' }}
-            onFocusCapture={e => e.target.style.borderColor = '#c8622a'}
+            rows={val.length > 60 ? 4 : 2} autoFocus onFocus={e => e.target.select()}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (changed) onSave(popup.key, val); } }}
+            style={{ width: '100%', padding: '12px', border: '2px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', outline: 'none', resize: 'none', boxSizing: 'border-box', fontFamily: 'inherit', direction: 'rtl', lineHeight: '1.6', transition: 'border-color 0.2s' }}
+            onFocus={e => e.target.style.borderColor = '#c8622a'}
             onBlur={e => e.target.style.borderColor = '#e5e7eb'}
           />
         )}
 
         {/* Footer */}
-        <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-          <button onClick={onClose} style={{ flex: 1, padding: '13px', background: '#f3f4f6', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', color: '#374151' }}>ביטול</button>
+        <div style={{ display: 'flex', gap: '8px', marginTop: '14px' }}>
+          <button onClick={onClose} style={{ flex: 1, padding: '11px', background: '#f3f4f6', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: '600', fontSize: '13px', color: '#374151' }}>ביטול</button>
           <button onClick={() => onSave(popup.key, val)} disabled={saving || !changed}
-            style={{ flex: 2, padding: '13px', background: changed ? 'linear-gradient(135deg,#e8a87c,#c8622a)' : '#e5e7eb', border: 'none', borderRadius: '12px', cursor: changed ? 'pointer' : 'default', color: changed ? 'white' : '#9ca3af', fontWeight: '700', fontSize: '15px', transition: 'all 0.2s', boxShadow: changed ? '0 4px 16px rgba(200,98,42,0.35)' : 'none' }}>
+            style={{ flex: 2, padding: '11px', background: changed ? 'linear-gradient(135deg,#e8a87c,#c8622a)' : '#e5e7eb', border: 'none', borderRadius: '10px', cursor: changed ? 'pointer' : 'default', color: changed ? 'white' : '#9ca3af', fontWeight: '700', fontSize: '14px', transition: 'all 0.2s', boxShadow: changed ? '0 4px 12px rgba(200,98,42,0.3)' : 'none' }}>
             {saving ? '⏳ שומר...' : '💾 שמור'}
           </button>
         </div>
