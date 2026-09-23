@@ -449,6 +449,22 @@
 }
 .addBtn:hover { opacity: 0.9; }
 
+.deleteManyBtn {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 2px solid #fca5a5;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  animation: fadeIn 0.2s ease;
+}
+.deleteManyBtn:hover { background: #fecaca; border-color: #dc2626; }
+@keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
 /* ── Filter Tabs ── */
 .filterTabs { display: flex; gap: 6px; flex-wrap: wrap; }
 .filterTab {

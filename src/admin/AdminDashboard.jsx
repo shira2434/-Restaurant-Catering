@@ -64,6 +64,7 @@ export default function AdminDashboard() {
   const [orderSearch, setOrderSearch] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [reviews, setReviews] = useState([]);
+  const [selectedProducts, setSelectedProducts] = useState(new Set());
 
   useEffect(() => {
     if (!user?.isAdmin) { navigate('/home'); return; }
@@ -126,6 +127,29 @@ export default function AdminDashboard() {
       setProducts(prev => prev.filter(p => p.id !== id));
       showToast('מוצר נמחק');
     } catch { showToast('שגיאה במחיקה', 'error'); }
+  };
+
+  const deleteSelected = async () => {
+    if (!window.confirm(`למחוק ${selectedProducts.size} מוצרים?`)) return;
+    try {
+      await Promise.all([...selectedProducts].map(id => productsAPI.deleteProduct(id)));
+      setProducts(prev => prev.filter(p => !selectedProducts.has(p.id)));
+      setSelectedProducts(new Set());
+      showToast(`${selectedProducts.size} מוצרים נמחקו`);
+    } catch { showToast('שגיאה במחיקה', 'error'); }
+  };
+
+  const toggleSelect = (id) => setSelectedProducts(prev => {
+    const next = new Set(prev);
+    next.has(id) ? next.delete(id) : next.add(id);
+    return next;
+  });
+
+  const toggleSelectAll = () => {
+    if (selectedProducts.size === filteredProducts.length)
+      setSelectedProducts(new Set());
+    else
+      setSelectedProducts(new Set(filteredProducts.map(p => p.id)));
   };
 
   const saveProduct = async () => {
@@ -456,6 +480,11 @@ export default function AdminDashboard() {
               <input className={styles.search} placeholder="🔍 חיפוש לפי שם או קטגוריה..."
                 value={searchProduct} onChange={e => setSearchProduct(e.target.value)} />
               <span className={styles.countChip}>{filteredProducts.length} מוצרים</span>
+              {selectedProducts.size > 0 && (
+                <button className={styles.deleteManyBtn} onClick={deleteSelected}>
+                  🗑️ מחק {selectedProducts.size} נבחרים
+                </button>
+              )}
               <button className={styles.addBtn} onClick={() => navigate('/add-product')}>➕ הוסף מוצר</button>
             </div>
 
@@ -526,11 +555,19 @@ export default function AdminDashboard() {
             <div className={styles.tableWrap}>
               <table className={styles.table}>
                 <thead>
-                  <tr><th>תמונה</th><th>שם</th><th>קטגוריה</th><th>מחיר</th><th>מלאי</th><th>תגיות</th><th>פעולות</th></tr>
+                  <tr>
+                    <th><input type="checkbox"
+                      checked={selectedProducts.size === filteredProducts.length && filteredProducts.length > 0}
+                      onChange={toggleSelectAll} /></th>
+                    <th>תמונה</th><th>שם</th><th>קטגוריה</th><th>מחיר</th><th>מלאי</th><th>תגיות</th><th>פעולות</th>
+                  </tr>
                 </thead>
                 <tbody>
                   {filteredProducts.map(p => (
-                    <tr key={p.id}>
+                    <tr key={p.id} style={{ background: selectedProducts.has(p.id) ? '#fef3e2' : '' }}>
+                      <td><input type="checkbox"
+                        checked={selectedProducts.has(p.id)}
+                        onChange={() => toggleSelect(p.id)} /></td>
                       <td>
                         <img src={p.image} alt={p.name} className={styles.thumb}
                           onError={e => e.target.src = 'https://via.placeholder.com/48'} />
