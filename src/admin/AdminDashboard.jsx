@@ -146,7 +146,7 @@ export default function AdminDashboard() {
   });
 
   const toggleSelectAll = () => {
-    if (selectedProducts.size === filteredProducts.length)
+    if (selectedProducts.size > 0)
       setSelectedProducts(new Set());
     else
       setSelectedProducts(new Set(filteredProducts.map(p => p.id)));
