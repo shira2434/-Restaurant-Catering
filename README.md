@@ -1,46 +1,47 @@
-# ☕קיטרינג
+# ☕ La Cucina — Catering App
 
-קישור לאתר:https://shira-fullstack-project.vercel.app/login
-אפליקציית חנות קפה מלאה עם צד לקוח ב-React וצד שרת ב-Node.js/Express.
+Live site: https://shira-fullstack-project.vercel.app/login
+
+A full-stack coffee & catering shop application built with React on the frontend and Node.js/Express on the backend.
 
 ---
 
-## 🛠️ טכנולוגיות
+## 🛠️ Technologies
 
 **Frontend**
 - React 19, React Router, Redux Toolkit
-- Formik + Yup (טפסים ואימות)
+- Formik + Yup (forms & validation)
 - Tailwind CSS + SCSS
 - Axios
 
 **Backend**
 - Node.js + Express
-- db.json (מסד נתונים מקומי)
+- db.json (local database)
 
 ---
 
-## 📁 מבנה הפרויקט
+## 📁 Project Structure
 
 ```
 ├── src/
-│   ├── api/          # קריאות API
-│   ├── auth/         # התחברות והרשמה
-│   ├── cart/         # עגלת קניות ותשלום
-│   ├── components/   # קומפוננטות משותפות
+│   ├── api/          # API calls
+│   ├── auth/         # Login & Register
+│   ├── cart/         # Shopping cart & checkout
+│   ├── components/   # Shared components
 │   ├── layout/       # Navbar
-│   ├── products/     # רשימת מוצרים, פרטים, הוספה
-│   ├── profile/      # פרופיל משתמש
-│   ├── reviews/      # ביקורות
-│   ├── routes/       # ניתוב
+│   ├── products/     # Product list, details, add product
+│   ├── profile/      # User profile
+│   ├── reviews/      # Reviews
+│   ├── routes/       # Routing
 │   └── store/        # Redux store
-└── server/           # שרת Express
+└── server/           # Express server
 ```
 
 ---
 
-## 🚀 הפעלה
+## 🚀 Getting Started
 
-### 1. התקנת תלויות
+### 1. Install dependencies
 
 ```bash
 # Frontend
@@ -51,29 +52,30 @@ cd server
 npm install
 ```
 
-### 2. הפעלת השרת
+### 2. Start the server
 
 ```bash
 cd server
 npm run dev
 ```
 
-> השרת רץ על `http://localhost:3000`
+> Server runs on `http://localhost:3001`
 
-### 3. הפעלת הלקוח
+### 3. Start the client
 
 ```bash
 npm run dev
 ```
 
-> האפליקציה רצה על `http://localhost:5173`
+> App runs on `http://localhost:5173`
 
 ---
 
-## ✨ פיצ'רים
+## ✨ Features
 
-- הרשמה והתחברות משתמשים
-- צפייה ברשימת מוצרים
-- הוספת מוצרים לעגלה ותשלום
-- הוספת ביקורות
-- ניהול פרופיל אישי
+- User registration and login
+- Browse product catalog
+- Add products to cart and checkout
+- Add reviews
+- Manage personal profile
+- Admin dashboard with live editing
